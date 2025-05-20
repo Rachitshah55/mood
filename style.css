@@ -80,6 +80,17 @@ input, button {
     color: #555;
 }
 
+/* Styling for moodBox */
+#moodBox {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 500;
+    padding: 15px;
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    background-color: #fcfcfc;
+}
+
 /* Styling for soundBox */
 #soundBox {
     font-size: 0.9rem;

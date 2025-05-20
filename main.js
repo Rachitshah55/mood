@@ -18,6 +18,96 @@ function updateTime() {
     setInterval(refreshTime, 1000);
 }
 
+function getTimeOfDay() {
+    const hour = new Date().getHours();
+    
+    if (hour >= 5 && hour < 12) {
+        return "morning";
+    } else if (hour >= 12 && hour < 17) {
+        return "afternoon";
+    } else if (hour >= 17 && hour < 21) {
+        return "evening";
+    } else {
+        return "night";
+    }
+}
+
+function calculateMood(weatherCondition, timeOfDay) {
+    let score = 50; // Default middle score
+    let label = "Neutral";
+    let emoji = "😐";
+    
+    // Base scores for weather conditions
+    const weatherScores = {
+        'Clear': 40,
+        'Clouds': 10,
+        'Rain': -20,
+        'Drizzle': -10,
+        'Snow': 0,
+        'Thunderstorm': -30,
+        'Mist': -5,
+        'Fog': -10,
+        'Haze': -5
+    };
+    
+    // Base scores for time of day
+    const timeScores = {
+        'morning': 20,
+        'afternoon': 30,
+        'evening': 10,
+        'night': -10
+    };
+    
+    // Add weather and time scores
+    score += (weatherScores[weatherCondition] || 0);
+    score += (timeScores[timeOfDay] || 0);
+    
+    // Special combinations
+    if (weatherCondition === 'Clear' && timeOfDay === 'afternoon') {
+        score += 10; // Sunny afternoon bonus
+    } else if (weatherCondition === 'Rain' && timeOfDay === 'night') {
+        score -= 5; // Rainy night penalty
+    } else if (weatherCondition === 'Clear' && timeOfDay === 'night') {
+        score += 5; // Clear night with stars
+    }
+    
+    // Ensure score stays within 0-100 range
+    score = Math.max(0, Math.min(100, score));
+    
+    // Determine mood label and emoji based on score
+    if (score >= 80) {
+        label = "Excellent";
+        emoji = "😁";
+    } else if (score >= 70) {
+        label = "Great";
+        emoji = "😊";
+    } else if (score >= 60) {
+        label = "Good";
+        emoji = "🙂";
+    } else if (score >= 50) {
+        label = "Chill";
+        emoji = "😌";
+    } else if (score >= 40) {
+        label = "Meh";
+        emoji = "😐";
+    } else if (score >= 30) {
+        label = "Low";
+        emoji = "😕";
+    } else if (score >= 20) {
+        label = "Bad";
+        emoji = "😔";
+    } else {
+        label = "Gloomy";
+        emoji = "😞";
+    }
+    
+    return {
+        score,
+        label,
+        emoji
+    };
+}
+
 function playAmbientSound(weatherCondition) {
     const soundBox = document.getElementById('soundBox');
     const audioEl = document.getElementById('ambientAudio');
@@ -118,6 +208,12 @@ function getWeather(params = {}) {
             
             // Play ambient sound based on weather condition
             playAmbientSound(condition);
+            
+            // Calculate and display mood
+            const timeOfDay = getTimeOfDay();
+            const mood = calculateMood(condition, timeOfDay);
+            const moodBox = document.getElementById('moodBox');
+            moodBox.textContent = `Mood: ${mood.label} ${mood.emoji} — Score: ${mood.score}/100`;
         })
         .catch(error => {
             weatherBox.textContent = `Error: ${error.message}`;
