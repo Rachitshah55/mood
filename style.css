@@ -47,6 +47,28 @@ input, button {
     margin-bottom: 10px;
 }
 
+/* Styling for timeBox */
+#timeBox {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 500;
+    padding: 10px 0;
+}
+
+/* Styling for weatherBox */
+#weatherBox {
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0;
+    font-size: 1.4rem;
+}
+
+.weather-icon {
+    margin-right: 10px;
+}
+
 @media (min-width: 600px) {
     .search-section {
         flex-direction: row;
