@@ -6,9 +6,56 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
+    font-family: "Segoe UI", sans-serif;
+    line-height: 1.6;
 }
 
 #app {
+    max-width: 800px;
+    margin: 0 auto;
     padding: 20px;
+}
+
+.header-section {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.header-section h1 {
+    margin-bottom: 5px;
+}
+
+section {
+    margin-bottom: 25px;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+input, button {
+    padding: 10px;
+    margin: 5px 0;
+    font-family: inherit;
+}
+
+.search-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.search-section input {
+    margin-bottom: 10px;
+}
+
+@media (min-width: 600px) {
+    .search-section {
+        flex-direction: row;
+        align-items: center;
+    }
+    
+    .search-section input {
+        flex: 1;
+        margin-right: 10px;
+        margin-bottom: 0;
+    }
 } 
