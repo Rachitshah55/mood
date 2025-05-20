@@ -18,6 +18,47 @@ function updateTime() {
     setInterval(refreshTime, 1000);
 }
 
+function playAmbientSound(weatherCondition) {
+    const soundBox = document.getElementById('soundBox');
+    const audioEl = document.getElementById('ambientAudio');
+    
+    // Map weather conditions to sound files
+    const soundMap = {
+        'Clear': 'birds.mp3',
+        'Clouds': 'wind.mp3',
+        'Rain': 'rain.mp3',
+        'Snow': 'snow.mp3',
+        'Thunderstorm': 'storm.mp3'
+    };
+    
+    // Default to 'Clear' if the weather condition is not mapped
+    const soundFile = soundMap[weatherCondition] || 'birds.mp3';
+    
+    // Set audio source
+    audioEl.src = soundFile;
+    audioEl.loop = true;
+    
+    // Try to play the audio (may fail due to autoplay restrictions)
+    try {
+        const playPromise = audioEl.play();
+        
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.error('Audio playback failed:', error);
+                soundBox.innerHTML = '<p>Click anywhere to enable ambient audio</p>';
+                
+                // Add a click event listener to the document to enable audio when the user interacts
+                document.addEventListener('click', () => {
+                    audioEl.play().catch(e => console.error('Play failed even after click:', e));
+                }, { once: true });
+            });
+        }
+    } catch (error) {
+        console.error('Audio playback error:', error);
+        soundBox.innerHTML = '<p>Click anywhere to enable ambient audio</p>';
+    }
+}
+
 function getWeather(params = {}) {
     const weatherBox = document.getElementById('weatherBox');
     const apiKey = "your_api_key_here"; // Placeholder for API key
@@ -74,6 +115,9 @@ function getWeather(params = {}) {
             weatherBox.appendChild(iconImg);
             weatherBox.appendChild(weatherText);
             weatherBox.appendChild(locationText);
+            
+            // Play ambient sound based on weather condition
+            playAmbientSound(condition);
         })
         .catch(error => {
             weatherBox.textContent = `Error: ${error.message}`;

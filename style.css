@@ -80,6 +80,14 @@ input, button {
     color: #555;
 }
 
+/* Styling for soundBox */
+#soundBox {
+    font-size: 0.9rem;
+    color: #666;
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
 @media (min-width: 600px) {
     .search-section {
         flex-direction: row;
