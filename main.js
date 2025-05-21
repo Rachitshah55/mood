@@ -212,15 +212,15 @@ function playAmbientSound(weatherCondition) {
     
     // Map weather conditions to sound files
     const soundMap = {
-        'Clear': 'birds.mp3',
-        'Clouds': 'wind.mp3',
-        'Rain': 'rain.mp3',
-        'Snow': 'snow.mp3',
-        'Thunderstorm': 'storm.mp3'
+        'Clear': './assets/sounds/birds.mp3',
+        'Clouds': './assets/sounds/wind.mp3',
+        'Rain': './assets/sounds/rain.mp3',
+        'Snow': './assets/sounds/snow.mp3',
+        'Thunderstorm': './assets/sounds/storm.mp3'
     };
     
     // Default to 'Clear' if the weather condition is not mapped
-    const soundFile = soundMap[weatherCondition] || 'birds.mp3';
+    const soundFile = soundMap[weatherCondition] || './assets/sounds/birds.mp3';
     
     // Set audio source
     audioEl.src = soundFile;
