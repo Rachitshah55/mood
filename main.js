@@ -1,5 +1,37 @@
 console.log("Stage 1 layout loaded");
 
+function applyMoodTheme(score) {
+    // Define theme colors based on mood score ranges
+    let backgroundColor;
+    
+    if (score >= 80) {
+        // Happy - Soft yellow/blue
+        backgroundColor = 'linear-gradient(135deg, #f9efb4, #a1d2fb)';
+    } else if (score >= 60) {
+        // Chill - Warm orange/pink
+        backgroundColor = 'linear-gradient(135deg, #ffd4a6, #ffb0d8)';
+    } else if (score >= 40) {
+        // Neutral - Pale gray/blue
+        backgroundColor = 'linear-gradient(135deg, #e4e7ec, #c5d5e5)';
+    } else if (score >= 20) {
+        // Low - Dark blue/gray
+        backgroundColor = 'linear-gradient(135deg, #5a6b89, #8492a6)';
+    } else {
+        // Sad - Deep gray/black
+        backgroundColor = 'linear-gradient(135deg, #2c3039, #494f5f)';
+    }
+    
+    // Apply the background color to the body
+    document.body.style.background = backgroundColor;
+    
+    // Adjust text color for readability on darker backgrounds
+    if (score < 40) {
+        document.body.style.color = '#ffffff';
+    } else {
+        document.body.style.color = '#333333';
+    }
+}
+
 function updateTime() {
     const timeBox = document.getElementById('timeBox');
     
@@ -214,6 +246,9 @@ function getWeather(params = {}) {
             const mood = calculateMood(condition, timeOfDay);
             const moodBox = document.getElementById('moodBox');
             moodBox.textContent = `Mood: ${mood.label} ${mood.emoji} — Score: ${mood.score}/100`;
+            
+            // Apply mood-based theme
+            applyMoodTheme(mood.score);
         })
         .catch(error => {
             weatherBox.textContent = `Error: ${error.message}`;
