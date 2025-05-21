@@ -1,5 +1,17 @@
 console.log("Stage 1 layout loaded");
 
+// Enable ambient sound after first user interaction
+document.addEventListener('click', () => {
+    const audio = document.getElementById('ambientAudio');
+    if (audio && audio.paused) {
+        try {
+            audio.play();
+        } catch (e) {
+            console.warn('Audio autoplay blocked:', e);
+        }
+    }
+}, { once: true });
+
 function applyMoodTheme(score) {
     // Define theme colors based on mood score ranges
     let backgroundColor;
@@ -48,6 +60,12 @@ function updateTime() {
     // Update immediately and then every second
     refreshTime();
     setInterval(refreshTime, 1000);
+}
+
+function formatLocalTime(timezoneOffsetInSeconds) {
+    const local = new Date(Date.now() + timezoneOffsetInSeconds * 1000);
+    const timeStr = local.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    return timeStr;
 }
 
 function getTimeOfDay() {
@@ -181,9 +199,11 @@ function playAmbientSound(weatherCondition) {
     }
 }
 
+const apiKey = "my_api_key"; // openweathermap.org api key 
+
 function getWeather(params = {}) {
     const weatherBox = document.getElementById('weatherBox');
-    const apiKey = "your_api_key_here"; // Placeholder for API key
+    
     let apiUrl;
     
     // Show loading state
@@ -237,6 +257,11 @@ function getWeather(params = {}) {
             weatherBox.appendChild(iconImg);
             weatherBox.appendChild(weatherText);
             weatherBox.appendChild(locationText);
+            
+            // Update time box with local time of the location
+            const timeBox = document.getElementById('timeBox');
+            const localTime = formatLocalTime(data.timezone);
+            timeBox.textContent = `Local time: ${localTime} — Location: ${data.name}`;
             
             // Play ambient sound based on weather condition
             playAmbientSound(condition);
@@ -341,9 +366,10 @@ function fetchLocalInfo() {
             
             // Format and display information
             extrasBox.innerHTML = `
-                <div class="local-info-item">Country: ${country} ${flagEmoji}</div>
-                <div class="local-info-item">Currency: ${currency}</div>
-                <div class="local-info-item">Language: ${languages}</div>
+                <p><em>Based on your network IP:</em></p>
+                <p>Country: ${country} ${flagEmoji}<br>
+                Currency: ${currency}<br>
+                Language: ${languages}</p>
             `;
         })
         .catch(error => {
@@ -353,7 +379,7 @@ function fetchLocalInfo() {
 }
 
 // Call functions on page load
-updateTime();
+// updateTime(); // Now handled in getWeather with location-specific time
 getWeather(); // Default to New York on initial load
 setupLocationDetection();
 fetchLocalInfo(); // Get and display local information 
