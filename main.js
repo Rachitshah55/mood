@@ -447,4 +447,11 @@ function fetchLocalInfo() {
 // updateTime(); // Now handled in getWeather with location-specific time
 getWeather(); // Default to New York on initial load
 setupLocationDetection();
-fetchLocalInfo(); // Get and display local information 
+fetchLocalInfo(); // Get and display local information
+
+// Register service worker for PWA
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js")
+    .then(reg => console.log("Service Worker registered", reg))
+    .catch(err => console.error("Service Worker failed", err));
+} 

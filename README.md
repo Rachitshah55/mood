@@ -12,6 +12,19 @@ Live mood, weather, time, and ambient sound of any city on Earth.
 - Local time, currency, language, and cultural fact
 - Responsive design
 - Embeddable widget for websites and blogs
+- Installable as a Progressive Web App (PWA)
+
+## Progressive Web App
+This project can be installed as a standalone app on mobile and desktop:
+- Works offline with cached assets
+- Home screen icon
+- Fullscreen mode without browser UI
+- Fast loading from cache
+
+To install:
+- **Mobile**: Tap "Add to Home Screen" in your browser menu
+- **Desktop Chrome**: Click the install icon in the address bar
+- **Desktop Edge**: Click the install icon in the address bar
 
 ## Widget Embed
 Add the mood widget to your website:
@@ -29,7 +42,7 @@ The widget displays:
 ## Tech
 - HTML, CSS, JavaScript
 - OpenWeatherMap API
-- IPAPI, Vanta.js, GitHub Pages
+- IPAPI, Service Workers, GitHub Pages
 
 ## Deployment
 1. Clone this repository
