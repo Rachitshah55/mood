@@ -57,34 +57,39 @@ document.addEventListener('touchstart', () => {
 
 function applyMoodTheme(score) {
     // Define theme colors based on mood score ranges
-    let backgroundColor;
+    let color1, color2, textColor;
     
     if (score >= 80) {
-        // Happy - Soft yellow/blue
-        backgroundColor = 'linear-gradient(135deg, #f9efb4, #a1d2fb)';
+        // Happy - Warm yellow + sky blue
+        color1 = '#fef08a';
+        color2 = '#60a5fa';
+        textColor = '#333333';
     } else if (score >= 60) {
-        // Chill - Warm orange/pink
-        backgroundColor = 'linear-gradient(135deg, #ffd4a6, #ffb0d8)';
+        // Chill - Orange + lavender
+        color1 = '#fdba74';
+        color2 = '#c4b5fd';
+        textColor = '#333333';
     } else if (score >= 40) {
-        // Neutral - Pale gray/blue
-        backgroundColor = 'linear-gradient(135deg, #e4e7ec, #c5d5e5)';
+        // Neutral - Soft gray + pale blue
+        color1 = '#e4e7ec';
+        color2 = '#c5d5e5';
+        textColor = '#333333';
     } else if (score >= 20) {
-        // Low - Dark blue/gray
-        backgroundColor = 'linear-gradient(135deg, #5a6b89, #8492a6)';
+        // Low - Navy + muted purple
+        color1 = '#1e3a8a';
+        color2 = '#7c3aed';
+        textColor = '#ffffff';
     } else {
-        // Sad - Deep gray/black
-        backgroundColor = 'linear-gradient(135deg, #2c3039, #494f5f)';
+        // Sad - Dark gray + black
+        color1 = '#374151';
+        color2 = '#1f2937';
+        textColor = '#ffffff';
     }
     
-    // Apply the background color to the body
-    document.body.style.background = backgroundColor;
-    
-    // Adjust text color for readability on darker backgrounds
-    if (score < 40) {
-        document.body.style.color = '#ffffff';
-    } else {
-        document.body.style.color = '#333333';
-    }
+    // Apply the theme colors using CSS variables
+    document.body.style.setProperty('--color1', color1);
+    document.body.style.setProperty('--color2', color2);
+    document.body.style.setProperty('--text-color', textColor);
 }
 
 function updateTime() {

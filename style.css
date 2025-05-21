@@ -5,11 +5,21 @@
     box-sizing: border-box;
 }
 
+@keyframes bgMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
 body {
     font-family: "Segoe UI", sans-serif;
     line-height: 1.6;
-    transition: background-color 0.5s ease, color 0.5s ease, background 0.5s ease;
     overflow-x: hidden;
+    background: linear-gradient(135deg, var(--color1, #e4e7ec), var(--color2, #c5d5e5));
+    background-size: 400% 400%;
+    animation: bgMove 15s ease infinite;
+    transition: color 0.5s ease;
+    color: var(--text-color, #333);
 }
 
 #app {
@@ -26,6 +36,9 @@ section, div {
 .header-section {
     text-align: center;
     margin-bottom: 30px;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 8px;
 }
 
 .header-section h1 {
@@ -36,9 +49,10 @@ section {
     margin-bottom: 25px;
     padding: 15px;
     border-radius: 5px;
-    background-color: rgba(249, 249, 249, 0.9);
+    background-color: rgba(249, 249, 249, 0.85);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     color: #333;
+    backdrop-filter: blur(5px);
 }
 
 input, button {
@@ -97,9 +111,10 @@ input, button {
     padding: 15px;
     border: 1px solid rgba(234, 234, 234, 0.5);
     border-radius: 8px;
-    background-color: rgba(252, 252, 252, 0.8);
+    background-color: rgba(252, 252, 252, 0.85);
     color: #333;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
 }
 
 /* Styling for soundBox */
@@ -130,7 +145,7 @@ input, button {
     font-style: italic;
     margin-top: 12px;
     padding: 8px;
-    background-color: rgba(240, 240, 240, 0.5);
+    background-color: rgba(240, 240, 240, 0.7);
     border-radius: 5px;
     border-left: 3px solid rgba(180, 180, 180, 0.4);
 }
@@ -147,9 +162,10 @@ input, button {
 
 #greetingBox span {
     padding: 5px 15px;
-    background-color: rgba(255, 255, 255, 0.6);
+    background-color: rgba(255, 255, 255, 0.8);
     border-radius: 20px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(2px);
 }
 
 @media (min-width: 600px) {
