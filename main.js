@@ -31,14 +31,26 @@ const greetings = {
     "ar": "Marhaba"
 };
 
-// Enable ambient sound after first user interaction
+// Enable ambient sound after first user interaction (click)
 document.addEventListener('click', () => {
     const audio = document.getElementById('ambientAudio');
     if (audio && audio.paused) {
         try {
             audio.play();
         } catch (e) {
-            console.warn('Audio autoplay blocked:', e);
+            console.warn('Audio autoplay blocked (click):', e);
+        }
+    }
+}, { once: true });
+
+// Enable ambient sound after first user interaction (touch - for mobile)
+document.addEventListener('touchstart', () => {
+    const audio = document.getElementById('ambientAudio');
+    if (audio && audio.paused) {
+        try {
+            audio.play();
+        } catch (e) {
+            console.warn('Autoplay blocked (touch):', e);
         }
     }
 }, { once: true });
