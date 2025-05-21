@@ -1,5 +1,22 @@
 console.log("Stage 1 layout loaded");
 
+// Country facts map
+const countryFacts = {
+    "United States": "The United States has more public libraries than McDonald's restaurants.",
+    "India": "India is home to the world's largest postal network.",
+    "Japan": "In Japan, slurping noodles is considered polite.",
+    "France": "France has over 1,500 types of cheese.",
+    "Brazil": "Brazil is named after a tree.",
+    "Australia": "Australia is wider than the moon.",
+    "Canada": "Canada has more lakes than the rest of the world combined.",
+    "China": "The Great Wall of China is not visible from space with the naked eye.",
+    "United Kingdom": "The UK issues passports in the name of 'Her Majesty' or 'His Majesty'.",
+    "Germany": "Germany has over 1,500 different types of sausages.",
+    "Italy": "Italy has more World Heritage sites than any other country.",
+    "South Korea": "In South Korea, babies are considered one year old at birth.",
+    "Russia": "Russia has 11 different time zones."
+};
+
 // Enable ambient sound after first user interaction
 document.addEventListener('click', () => {
     const audio = document.getElementById('ambientAudio');
@@ -364,12 +381,16 @@ function fetchLocalInfo() {
                     String.fromCodePoint(char.charCodeAt(0) + 127397))
                 : '';
             
+            // Get fun fact for the country
+            const funFact = countryFacts[country] || "This place is still full of surprises.";
+            
             // Format and display information
             extrasBox.innerHTML = `
                 <p><em>Based on your network IP:</em></p>
                 <p>Country: ${country} ${flagEmoji}<br>
                 Currency: ${currency}<br>
                 Language: ${languages}</p>
+                <p class="country-fact"><em>Did you know?</em> ${funFact}</p>
             `;
         })
         .catch(error => {
