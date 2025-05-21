@@ -315,7 +315,45 @@ function setupLocationDetection() {
     });
 }
 
+function fetchLocalInfo() {
+    const extrasBox = document.getElementById('extrasBox');
+    extrasBox.textContent = 'Loading location information...';
+    
+    fetch('https://ipapi.co/json/')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Location data not available');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Extract the required information
+            const country = data.country_name || 'Unknown';
+            const currency = data.currency || 'Unknown';
+            const languages = data.languages || 'Unknown';
+            
+            // Get country flag emoji
+            const countryCode = data.country_code || '';
+            const flagEmoji = countryCode 
+                ? countryCode.toUpperCase().replace(/./g, char => 
+                    String.fromCodePoint(char.charCodeAt(0) + 127397))
+                : '';
+            
+            // Format and display information
+            extrasBox.innerHTML = `
+                <div class="local-info-item">Country: ${country} ${flagEmoji}</div>
+                <div class="local-info-item">Currency: ${currency}</div>
+                <div class="local-info-item">Language: ${languages}</div>
+            `;
+        })
+        .catch(error => {
+            extrasBox.textContent = 'Could not load location info.';
+            console.error('Location fetch error:', error);
+        });
+}
+
 // Call functions on page load
 updateTime();
 getWeather(); // Default to New York on initial load
-setupLocationDetection(); 
+setupLocationDetection();
+fetchLocalInfo(); // Get and display local information 

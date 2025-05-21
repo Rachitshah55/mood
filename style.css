@@ -104,6 +104,20 @@ input, button {
     margin-top: 1.5rem;
 }
 
+/* Styling for extrasBox */
+#extrasBox {
+    font-size: 0.85rem;
+    color: #555;
+    text-align: center;
+    padding: 15px 0 5px;
+    border-top: 1px solid rgba(200, 200, 200, 0.3);
+    margin-top: 10px;
+}
+
+.local-info-item {
+    margin-bottom: 5px;
+}
+
 @media (min-width: 600px) {
     .search-section {
         flex-direction: row;
