@@ -17,6 +17,20 @@ const countryFacts = {
     "Russia": "Russia has 11 different time zones."
 };
 
+// Language-based greetings
+const greetings = {
+    "en": "Hello",
+    "es": "Hola",
+    "fr": "Bonjour",
+    "de": "Hallo",
+    "it": "Ciao",
+    "hi": "Namaste",
+    "ja": "Konnichiwa",
+    "zh": "Nǐ hǎo",
+    "pt": "Olá",
+    "ar": "Marhaba"
+};
+
 // Enable ambient sound after first user interaction
 document.addEventListener('click', () => {
     const audio = document.getElementById('ambientAudio');
@@ -359,7 +373,10 @@ function setupLocationDetection() {
 
 function fetchLocalInfo() {
     const extrasBox = document.getElementById('extrasBox');
+    const greetingBox = document.getElementById('greetingBox');
+    
     extrasBox.textContent = 'Loading location information...';
+    greetingBox.textContent = ''; // Clear greeting box
     
     fetch('https://ipapi.co/json/')
         .then(response => {
@@ -373,6 +390,15 @@ function fetchLocalInfo() {
             const country = data.country_name || 'Unknown';
             const currency = data.currency || 'Unknown';
             const languages = data.languages || 'Unknown';
+            
+            // Extract first language code (e.g. "en-US,fr-CA" → "en")
+            const languageCode = languages.split(',')[0].split('-')[0].toLowerCase();
+            
+            // Get greeting based on language code
+            const greeting = greetings[languageCode] || "Hello, world!";
+            
+            // Display greeting
+            greetingBox.innerHTML = `<span>✨ ${greeting}! ✨</span>`;
             
             // Get country flag emoji
             const countryCode = data.country_code || '';
@@ -395,6 +421,7 @@ function fetchLocalInfo() {
         })
         .catch(error => {
             extrasBox.textContent = 'Could not load location info.';
+            greetingBox.textContent = '✨ Hello, world! ✨'; // Default greeting on error
             console.error('Location fetch error:', error);
         });
 }
