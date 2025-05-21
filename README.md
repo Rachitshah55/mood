@@ -11,6 +11,20 @@ Live mood, weather, time, and ambient sound of any city on Earth.
 - Ambient soundscape (based on condition)
 - Local time, currency, language, and cultural fact
 - Responsive design
+- Embeddable widget for websites and blogs
+
+## Widget Embed
+Add the mood widget to your website:
+
+```html
+<iframe src="https://yourusername.github.io/mood/iframe.html" width="300" height="200" frameborder="0"></iframe>
+```
+
+The widget displays:
+- Language-based greeting
+- Weather conditions with icon
+- Current mood with emoji
+- Location name
 
 ## Tech
 - HTML, CSS, JavaScript
@@ -20,7 +34,7 @@ Live mood, weather, time, and ambient sound of any city on Earth.
 ## Deployment
 1. Clone this repository
 2. Get a free API key from [OpenWeatherMap](https://openweathermap.org/api)
-3. Replace `my_api_key` with your actual API key in main.js
+3. Replace `my_api_key` with your actual API key in main.js and widget.js
 4. Commit and push to GitHub
 5. Enable GitHub Pages in your repository settings (branch: main, folder: /root)
 

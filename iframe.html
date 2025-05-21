@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Widget</title>
+    <style>
+        /* Inline widget styles for faster loading */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+        
+        body {
+            width: 300px;
+            max-height: 200px;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--color1, #e4e7ec), var(--color2, #c5d5e5));
+            color: var(--text-color, #333);
+            padding: 12px;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+        
+        #widget-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 8px;
+        }
+        
+        #widget-greeting {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        #widget-weather {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            margin: 4px 0;
+        }
+        
+        #widget-weather img {
+            width: 40px;
+            height: 40px;
+        }
+        
+        #widget-mood {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 4px 0;
+        }
+        
+        #widget-location {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="widget-container">
+        <div id="widget-greeting">Loading...</div>
+        <div id="widget-weather">
+            <span>Checking weather...</span>
+        </div>
+        <div id="widget-mood">Calculating mood...</div>
+        <div id="widget-location"></div>
+    </div>
+
+    <script>
+        // Simplified version of the mood logic for the widget
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load the main script
+            const script = document.createElement('script');
+            script.src = './widget.js';
+            document.body.appendChild(script);
+            
+            // Add loading animation
+            document.querySelectorAll('#widget-container > div').forEach(el => {
+                el.classList.add('loading');
+            });
+        });
+    </script>
+</body>
+</html> 
