@@ -13,6 +13,7 @@ Live mood, weather, time, and ambient sound of any city on Earth.
 - Responsive design
 - Embeddable widget for websites and blogs
 - Installable as a Progressive Web App (PWA)
+- Available as a browser extension for Chrome/Firefox
 
 ## Progressive Web App
 This project can be installed as a standalone app on mobile and desktop:
@@ -25,6 +26,19 @@ To install:
 - **Mobile**: Tap "Add to Home Screen" in your browser menu
 - **Desktop Chrome**: Click the install icon in the address bar
 - **Desktop Edge**: Click the install icon in the address bar
+
+## Browser Extension
+The project is also available as a browser extension for quick mood/weather checks:
+- Install in Chrome or Firefox
+- Compact popup interface
+- Access from any webpage
+- Uses your current location
+
+To install (developer mode):
+1. Go to `chrome://extensions` or `about:debugging` in Firefox
+2. Enable "Developer Mode"
+3. Click "Load unpacked" or "Load Temporary Add-on"
+4. Select the `/extension` folder
 
 ## Widget Embed
 Add the mood widget to your website:
