@@ -249,6 +249,87 @@ function playAmbientSound(weatherCondition) {
 
 const apiKey = "my_api_key"; // openweathermap.org api key 
 
+function buildVisualPrompt(data) {
+    // Extract data
+    const { weatherCondition, cityName, localTime, moodScore, moodLabel } = data;
+    
+    // Map weather conditions to visual effects
+    const weatherEffects = {
+        'Clear': 'clear skies with golden light',
+        'Clouds': 'soft diffused light through clouds',
+        'Rain': 'rain drops with reflections',
+        'Drizzle': 'light drizzle creating a misty atmosphere',
+        'Snow': 'gentle snowfall with crystalline reflections',
+        'Thunderstorm': 'dramatic lightning illuminating dark clouds',
+        'Mist': 'ethereal mist creating a dreamy atmosphere',
+        'Fog': 'thick fog with limited visibility',
+        'Haze': 'hazy atmosphere with diffused light'
+    };
+    
+    // Map mood scores to artistic styles and tones
+    let style, moodTone;
+    
+    if (moodScore >= 80) {
+        style = ['Vibrant impressionism', 'Colorful pop art', 'Bright watercolor', 'Cheerful digital art'][Math.floor(Math.random() * 4)];
+        moodTone = 'uplifting and energetic';
+    } else if (moodScore >= 60) {
+        style = ['Soft pastel art', 'Relaxed impressionism', 'Warm digital painting', 'Light and airy photography'][Math.floor(Math.random() * 4)];
+        moodTone = 'peaceful and content';
+    } else if (moodScore >= 40) {
+        style = ['Balanced photography', 'Realistic digital art', 'Modern minimalism', 'Clean line art'][Math.floor(Math.random() * 4)];
+        moodTone = 'neutral and balanced';
+    } else if (moodScore >= 20) {
+        style = ['Muted photography', 'Melancholic digital art', 'Somber impressionism', 'Moody noir style'][Math.floor(Math.random() * 4)];
+        moodTone = 'reflective and calm';
+    } else {
+        style = ['Dark expressionism', 'Dramatic noir', 'Moody low-key photography', 'Gritty realism'][Math.floor(Math.random() * 4)];
+        moodTone = 'introspective and subdued';
+    }
+    
+    // Determine base scene based on city name
+    // This is a simplified approach - could be expanded with more city-specific scenes
+    const urbanScenes = ['city skyline', 'busy street', 'urban park', 'cafe terrace', 'public square'];
+    const naturalScenes = ['coastline', 'mountain view', 'forest clearing', 'riverside', 'meadow'];
+    const scenes = [...urbanScenes, ...naturalScenes];
+    
+    // Use hash of city name to consistently select the same scene for the same city
+    const cityHash = cityName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const baseScene = `${cityName} ${scenes[cityHash % scenes.length]}`;
+    
+    // Determine time of day
+    const hour = parseInt(localTime.split(':')[0], 10);
+    let timeOfDay;
+    
+    if (hour >= 5 && hour < 8) {
+        timeOfDay = 'dawn';
+    } else if (hour >= 8 && hour < 12) {
+        timeOfDay = 'morning';
+    } else if (hour >= 12 && hour < 16) {
+        timeOfDay = 'afternoon';
+    } else if (hour >= 16 && hour < 19) {
+        timeOfDay = 'golden hour';
+    } else if (hour >= 19 && hour < 22) {
+        timeOfDay = 'dusk';
+    } else {
+        timeOfDay = 'night';
+    }
+    
+    // Get weather effect
+    const weatherEffect = weatherEffects[weatherCondition] || 'ambient atmospheric conditions';
+    
+    // Build full prompt
+    const fullPrompt = `${style} of ${baseScene} at ${timeOfDay}, ${weatherEffect}, ${moodTone} atmosphere, ${moodLabel} mood`;
+    
+    return {
+        style,
+        baseScene,
+        timeOfDay,
+        weatherEffect,
+        moodTone,
+        fullPrompt
+    };
+}
+
 function getWeather(params = {}) {
     const weatherBox = document.getElementById('weatherBox');
     
@@ -322,6 +403,19 @@ function getWeather(params = {}) {
             
             // Apply mood-based theme
             applyMoodTheme(mood.score);
+            
+            // Generate visual prompt
+            const visualPrompt = buildVisualPrompt({
+                weatherCondition: condition,
+                cityName: cityName,
+                localTime: localTime,
+                moodScore: mood.score,
+                moodLabel: mood.label
+            });
+            
+            // Log the generated prompt to console
+            console.log("Generated Visual Prompt:", visualPrompt.fullPrompt);
+            
         })
         .catch(error => {
             weatherBox.textContent = `Error: ${error.message}`;
