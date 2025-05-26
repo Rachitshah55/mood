@@ -17,6 +17,19 @@ const countryFacts = {
     "Russia": "Russia has 11 different time zones."
 };
 
+// Background image mapping
+const backgroundMap = {
+    "Clear-morning": "sunny-beach",
+    "Clear-night": "cyberpunk",
+    "Rain-evening": "rainy-night",
+    "Rain-morning": "rainy-cafe",
+    "Clouds-afternoon": "cozy-cafe",
+    "Snow-afternoon": "city-snow",
+    "Storm-night": "cyberpunk-cafe",
+    "Hot-afternoon": "palm-beach",
+    "Wind-day": "beach-day"
+};
+
 // Language-based greetings
 const greetings = {
     "en": "Hello",
@@ -247,7 +260,7 @@ function playAmbientSound(weatherCondition) {
     }
 }
 
-const apiKey = "my_api_key"; // openweathermap.org api key 
+const apiKey = "key"; // openweathermap.org api key 
 
 function buildVisualPrompt(data) {
     // Extract data
@@ -415,6 +428,21 @@ function getWeather(params = {}) {
             
             // Log the generated prompt to console
             console.log("Generated Visual Prompt:", visualPrompt.fullPrompt);
+            
+            // Create a key using weather condition and time of day
+            const sceneKey = `${condition}-${timeOfDay}`;
+            console.log("Scene key:", sceneKey);
+            
+            // Get the filename from the background map or fallback to sunny-beach
+            const filename = backgroundMap[sceneKey] || "sunny-beach";
+            console.log("Resolved filename:", filename);
+            
+            // Construct the background image URL
+            const bgUrl = `./assets/placeholders/${filename}.jpg`;
+            console.log("Image path:", bgUrl);
+            
+            // Set background image
+            document.getElementById("bgImageLayer").style.backgroundImage = `url('${bgUrl}')`;
             
         })
         .catch(error => {

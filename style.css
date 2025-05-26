@@ -11,6 +11,20 @@
     100% { background-position: 0% 50%; }
 }
 
+#bgImageLayer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+  opacity: 0.8;
+  transition: background-image 1s ease;
+  filter: brightness(0.9) blur(2px);
+}
+
 body {
     font-family: "Segoe UI", sans-serif;
     line-height: 1.6;
