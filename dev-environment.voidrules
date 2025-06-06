@@ -1,0 +1,133 @@
+⚠️ DO NOT MODIFY DEV ENVIRONMENT
+
+This document is intended for AI coding assistants like Cursor. The development tools in this setup are installed in a clean, organized, and intentional structure under `C:\DevTools`. Do not override, move, or modify paths, environment variables, or settings.
+
+🗂️ Tool Installation Paths
+
+Below are the exact paths for each tool. These were manually installed and cleaned for isolation and control.
+
+✅ Android  
+- Android Studio: `C:\DevTools\Android\android-studio-2024.3.1.14-windows\android-studio`  
+- Android SDK: `C:\DevTools\Android\SDK`  
+- Platform Tools: `C:\DevTools\Android\SDK\platform-tools`  
+- Emulator: `C:\DevTools\Android\SDK\emulator`  
+- CMDline Tools: `C:\DevTools\Android\SDK\cmdline-tools`  
+
+✅ Flutter  
+- Flutter SDK: `C:\DevTools\flutter_windows_3.29.2-stable\flutter`
+
+✅ Git  
+- Git: `C:\DevTools\Git`
+
+✅ Gradle  
+- Gradle: `C:\DevTools\Gradle\gradle-8.7`
+
+✅ Java  
+- Java JDK 17: `C:\DevTools\Java\jdl-17`
+
+✅ Node.js  
+- Node.js: `C:\DevTools\nodejs`
+
+✅ Python  
+- Python 3.13.3: `C:\DevTools\Python\Python313`
+
+🔧 Environment Variables
+
+All variables are manually configured and must not be changed:
+
+JAVA_HOME=C:\DevTools\Java\jdl-17
+ANDROID_SDK_ROOT=C:\DevTools\Android\SDK
+FLUTTER_HOME=C:\DevTools\flutter_windows_3.29.2-stable\flutter
+GRADLE_HOME=C:\DevTools\Gradle\gradle-8.7
+PYTHON_HOME=C:\DevTools\Python\Python313
+NODEJS_HOME=C:\DevTools\nodejs
+
+These paths are already added to the system `PATH` (bin folders only).
+
+📌 Notes
+
+- This setup avoids clutter in `C:\Users` and `C:\Program Files`  
+- Tool-specific settings (e.g., ADB, Flutter SDK) rely on these exact paths  
+- No automatic installer or AI tool should reinstall or relocate tools
+
+✅ Flutter Doctor Output Summary  
+- Flutter: ✅  
+- Android toolchain: ✅  
+- ADB & Emulator: ✅  
+- Git: ✅  
+- Node.js & Expo: ✅  
+- Python: ✅  
+- Visual Studio (desktop): ❌ (intentionally skipped)
+
+📣 Reminder
+
+This environment is handcrafted and version-controlled. Preserve its structure and configuration exactly as-is.
+
+---
+
+# === GLOBAL CURSOR RULES ===
+
+## 🔧 GENERAL CODING STYLE
+- Use clear, self-explanatory variable and function names
+- Prefer concise, modular code with single-responsibility functions
+- Avoid over-engineering or unnecessary abstraction
+
+## 📦 FILE STRUCTURE
+- Respect clean folder structure under `C:\DevProjects\`
+- Place source code inside a `/src` folder (if multi-file project)
+- Use `.env` or `config.js` for environment/configuration variables
+
+## ⚛️ FRONTEND (HTML/CSS/JS/React)
+- Use semantic HTML and accessibility (ARIA) best practices
+- Default to Tailwind CSS unless stated otherwise
+- Prefer React functional components and hooks
+- No inline styles unless for prototyping
+
+## 🐍 PYTHON PROJECTS
+- Use `.venv` for virtual environments inside each project folder
+- Follow PEP8 standards
+- Organize code into modules and packages when needed
+
+## 📁 NAMING CONVENTIONS
+- Files: `kebab-case` for static files (e.g., `index.html`, `data-set.csv`)
+- Code: `camelCase` for JavaScript, `snake_case` for Python
+- Folders: lowercase with hyphens (e.g., `/api-routes`, `/assets`)
+
+## 🧠 AI BEHAVIOR & SUGGESTIONS
+- Always summarize what code does before suggesting
+- Clearly indicate side effects (e.g., file changes, API calls)
+- Avoid external dependencies unless strictly necessary
+
+## 🔐 SECURITY
+- Never hardcode secrets — use `.env` files instead
+- Validate all user input (especially forms and APIs)
+
+## 📈 PERFORMANCE
+- Prefer lightweight libraries and minimal dependencies
+- Avoid bloated frameworks unless explicitly required
+
+## 📄 DOCUMENTATION & COMMENTS
+- Write concise comments where logic isn’t obvious
+- Auto-generate README templates if missing
+
+## 💡 INNOVATION FOCUS
+- Favor simple, accessible designs (text-first, voice-enabled)
+- For experimental ideas, prioritize fast prototyping
+
+## 🚫 WHAT TO AVOID
+- Don’t scaffold unnecessary files or folders
+- Don’t assume monorepo or enterprise patterns unless specified
+- Avoid Redux or heavy state managers unless justified
+
+---
+
+## 🔒 ENVIRONMENT INTEGRITY RULE
+
+- DO NOT install, update, delete, or modify any part of the system environment, global tools, or config paths unless:
+  - You ask the user explicitly
+  - You explain why the change is needed
+  - You show exactly what will change
+  - You get clear user confirmation
+
+- Default assumption: Environment is **fixed** and cannot be changed.
+- All tools are installed under `C:\DevTools\` — treat these paths as **final** unless the user initiates a change.

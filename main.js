@@ -49,7 +49,14 @@ document.addEventListener('click', () => {
     const audio = document.getElementById('ambientAudio');
     if (audio && audio.paused) {
         try {
-            audio.play();
+            audio.play()
+                .then(() => {
+                    console.log('Audio playback started after click');
+                    document.getElementById('soundBox').innerHTML = '';
+                })
+                .catch(e => {
+                    console.warn('Audio autoplay blocked (click):', e);
+                });
         } catch (e) {
             console.warn('Audio autoplay blocked (click):', e);
         }
@@ -61,7 +68,14 @@ document.addEventListener('touchstart', () => {
     const audio = document.getElementById('ambientAudio');
     if (audio && audio.paused) {
         try {
-            audio.play();
+            audio.play()
+                .then(() => {
+                    console.log('Audio playback started after touch');
+                    document.getElementById('soundBox').innerHTML = '';
+                })
+                .catch(e => {
+                    console.warn('Autoplay blocked (touch):', e);
+                });
         } catch (e) {
             console.warn('Autoplay blocked (touch):', e);
         }
@@ -225,42 +239,52 @@ function playAmbientSound(weatherCondition) {
     
     // Map weather conditions to sound files
     const soundMap = {
-        'Clear': './assets/sounds/birds.mp3',
-        'Clouds': './assets/sounds/wind.mp3',
-        'Rain': './assets/sounds/rain.mp3',
-        'Snow': './assets/sounds/snow.mp3',
-        'Thunderstorm': './assets/sounds/storm.mp3'
+        'Clear': 'birds.mp3',
+        'Rain': 'rain.mp3',
+        'Drizzle': 'rain.mp3',
+        'Thunderstorm': 'storm.mp3',
+        'Snow': 'wind.mp3',
+        'Mist': 'wind.mp3',
+        'Haze': 'wind.mp3',
+        'Fog': 'wind.mp3',
+        'Clouds': 'wind.mp3'
     };
     
-    // Default to 'Clear' if the weather condition is not mapped
-    const soundFile = soundMap[weatherCondition] || './assets/sounds/birds.mp3';
+    // Default to birds.mp3 if the weather condition is not mapped
+    const filename = soundMap[weatherCondition] || 'birds.mp3';
+    
+    console.log('Weather condition:', weatherCondition);
+    console.log('Selected audio file:', filename);
     
     // Set audio source
-    audioEl.src = soundFile;
+    audioEl.pause();  // stop anything previous
+    audioEl.removeAttribute('src'); // clear
+    audioEl.load();  // reset
+
+    audioEl.src = `./assets/sounds/${filename}`;
     audioEl.loop = true;
+    
+    console.log("Trying to load and play:", audioEl.src);
     
     // Try to play the audio (may fail due to autoplay restrictions)
     try {
         const playPromise = audioEl.play();
         
         if (playPromise !== undefined) {
-            playPromise.catch(error => {
+            playPromise.then(() => {
+                console.log('Audio playback started successfully');
+            }).catch(error => {
                 console.error('Audio playback failed:', error);
-                soundBox.innerHTML = '<p>Click anywhere to enable ambient audio</p>';
-                
-                // Add a click event listener to the document to enable audio when the user interacts
-                document.addEventListener('click', () => {
-                    audioEl.play().catch(e => console.error('Play failed even after click:', e));
-                }, { once: true });
+                soundBox.innerHTML = '<p>Tap anywhere to enable ambient sound</p>';
             });
         }
     } catch (error) {
         console.error('Audio playback error:', error);
-        soundBox.innerHTML = '<p>Click anywhere to enable ambient audio</p>';
+        soundBox.innerHTML = '<p>Tap anywhere to enable ambient sound</p>';
     }
 }
 
-const apiKey = "key"; // openweathermap.org api key 
+ 
 
 function buildVisualPrompt(data) {
     // Extract data
@@ -343,113 +367,92 @@ function buildVisualPrompt(data) {
     };
 }
 
+
 function getWeather(params = {}) {
     const weatherBox = document.getElementById('weatherBox');
-    
-    let apiUrl;
-    
+
     // Show loading state
     weatherBox.textContent = 'Loading weather data...';
-    
-    // Determine which API endpoint to use based on provided parameters
-    if (params.lat !== undefined && params.lon !== undefined) {
-        // Use coordinates-based API
-        apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${params.lat}&lon=${params.lon}&appid=${apiKey}&units=metric`;
-    } else if (params.city) {
-        // Use city-based API
-        apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(params.city)}&appid=${apiKey}&units=metric`;
-    } else {
-        // Default to New York if no parameters provided
-        apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=New%20York&appid=${apiKey}&units=metric`;
-    }
-    
-    fetch(apiUrl)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Weather data not available');
-            }
-            return response.json();
-        })
-        .then(data => {
-            const temperature = Math.round(data.main.temp);
-            const condition = data.weather[0].main;
-            const iconCode = data.weather[0].icon;
-            const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
-            const cityName = data.name;
-            
-            // Clear the loading text
-            weatherBox.textContent = '';
-            
-            // Create and add weather icon image
-            const iconImg = document.createElement('img');
-            iconImg.src = iconUrl;
-            iconImg.alt = condition;
-            iconImg.className = 'weather-icon';
-            
-            // Create and add temperature and condition text
-            const weatherText = document.createElement('span');
-            weatherText.textContent = `${temperature}°C — ${condition}`;
-            
-            // Create location text
-            const locationText = document.createElement('div');
-            locationText.textContent = cityName;
-            locationText.className = 'location-text';
-            
-            // Add elements to weatherBox
-            weatherBox.appendChild(iconImg);
-            weatherBox.appendChild(weatherText);
-            weatherBox.appendChild(locationText);
-            
-            // Update time box with local time of the location
-            const timeBox = document.getElementById('timeBox');
-            const localTime = formatLocalTime(data.timezone);
-            timeBox.textContent = `Local time: ${localTime} — Location: ${data.name}`;
-            
-            // Play ambient sound based on weather condition
-            playAmbientSound(condition);
-            
-            // Calculate and display mood
-            const timeOfDay = getTimeOfDay();
-            const mood = calculateMood(condition, timeOfDay);
-            const moodBox = document.getElementById('moodBox');
-            moodBox.textContent = `Mood: ${mood.label} ${mood.emoji} — Score: ${mood.score}/100`;
-            
-            // Apply mood-based theme
-            applyMoodTheme(mood.score);
-            
-            // Generate visual prompt
-            const visualPrompt = buildVisualPrompt({
-                weatherCondition: condition,
-                cityName: cityName,
-                localTime: localTime,
-                moodScore: mood.score,
-                moodLabel: mood.label
-            });
-            
-            // Log the generated prompt to console
-            console.log("Generated Visual Prompt:", visualPrompt.fullPrompt);
-            
-            // Create a key using weather condition and time of day
-            const sceneKey = `${condition}-${timeOfDay}`;
-            console.log("Scene key:", sceneKey);
-            
-            // Get the filename from the background map or fallback to sunny-beach
-            const filename = backgroundMap[sceneKey] || "sunny-beach";
-            console.log("Resolved filename:", filename);
-            
-            // Construct the background image URL
-            const bgUrl = `./assets/placeholders/${filename}.jpg`;
-            console.log("Image path:", bgUrl);
-            
-            // Set background image
-            document.getElementById("bgImageLayer").style.backgroundImage = `url('${bgUrl}')`;
-            
-        })
-        .catch(error => {
-            weatherBox.textContent = `Error: ${error.message}`;
-            console.error('Weather fetch error:', error);
+
+    // Call our Netlify Function instead of OpenWeather directly
+    fetch('/.netlify/functions/getWeather', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(params)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Weather data not available');
+        }
+        return response.json();
+    })
+    .then(data => {
+        const temperature = Math.round(data.main.temp);
+        const condition = data.weather[0].main;
+        const iconCode = data.weather[0].icon;
+        const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+        const cityName = data.name;
+
+        weatherBox.textContent = '';
+
+        const iconImg = document.createElement('img');
+        iconImg.src = iconUrl;
+        iconImg.alt = condition;
+        iconImg.className = 'weather-icon';
+
+        const weatherText = document.createElement('span');
+        weatherText.textContent = `${temperature}°C — ${condition}`;
+
+        const locationText = document.createElement('div');
+        locationText.textContent = cityName;
+        locationText.className = 'location-text';
+
+        weatherBox.appendChild(iconImg);
+        weatherBox.appendChild(weatherText);
+        weatherBox.appendChild(locationText);
+
+        const timeBox = document.getElementById('timeBox');
+        const localTime = formatLocalTime(data.timezone);
+        timeBox.textContent = `Local time: ${localTime} — Location: ${data.name}`;
+
+        playAmbientSound(condition);
+
+        const timeOfDay = getTimeOfDay();
+        const mood = calculateMood(condition, timeOfDay);
+        const moodBox = document.getElementById('moodBox');
+        moodBox.textContent = `Mood: ${mood.label} ${mood.emoji} — Score: ${mood.score}/100`;
+
+        applyMoodTheme(mood.score);
+
+        const visualPrompt = buildVisualPrompt({
+            weatherCondition: condition,
+            cityName: cityName,
+            localTime: localTime,
+            moodScore: mood.score,
+            moodLabel: mood.label
         });
+
+        console.log("Generated Visual Prompt:", visualPrompt.fullPrompt);
+
+        const sceneKey = `${condition}-${timeOfDay}`;
+        console.log("Scene key:", sceneKey);
+
+        const filename = backgroundMap[sceneKey] || "sunny-beach";
+        console.log("Resolved filename:", filename);
+
+        const bgUrl = `./assets/placeholders/${filename}.jpg`;
+        console.log("Image path:", bgUrl);
+
+        document.getElementById("bgImageLayer").style.backgroundImage = `url('${bgUrl}')`;
+    })
+    .catch(error => {
+        weatherBox.textContent = `Error: ${error.message}`;
+        console.error('Weather fetch error:', error);
+    });
 }
+
 
 function setupLocationDetection() {
     const detectLocationBtn = document.querySelector('.search-section button');
