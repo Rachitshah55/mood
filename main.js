@@ -1,5 +1,8 @@
 console.log("Stage 1 layout loaded");
 
+// Store the interval ID for the time update to clear it later
+let timeUpdateIntervalId;
+
 // Country facts map
 const countryFacts = {
     "United States": "The United States has more public libraries than McDonald's restaurants.",
@@ -47,39 +50,31 @@ const greetings = {
 // Enable ambient sound after first user interaction (click)
 document.addEventListener('click', () => {
     const audio = document.getElementById('ambientAudio');
-    if (audio && audio.paused) {
+    attemptAudioPlayback(audio, 'click');
+}, { once: true });
+
+// Function to attempt audio playback
+function attemptAudioPlayback(audioElement, sourceEvent) {
+    if (audioElement && audioElement.paused) {
         try {
-            audio.play()
+            audioElement.play()
                 .then(() => {
-                    console.log('Audio playback started after click');
+                    console.log(`Audio playback started after ${sourceEvent}`);
                     document.getElementById('soundBox').innerHTML = '';
                 })
                 .catch(e => {
-                    console.warn('Audio autoplay blocked (click):', e);
+                    console.warn(`Audio autoplay blocked (${sourceEvent}):`, e);
                 });
         } catch (e) {
-            console.warn('Audio autoplay blocked (click):', e);
+            console.warn(`Audio autoplay blocked (${sourceEvent}):`, e);
         }
     }
-}, { once: true });
+}
 
 // Enable ambient sound after first user interaction (touch - for mobile)
 document.addEventListener('touchstart', () => {
     const audio = document.getElementById('ambientAudio');
-    if (audio && audio.paused) {
-        try {
-            audio.play()
-                .then(() => {
-                    console.log('Audio playback started after touch');
-                    document.getElementById('soundBox').innerHTML = '';
-                })
-                .catch(e => {
-                    console.warn('Autoplay blocked (touch):', e);
-                });
-        } catch (e) {
-            console.warn('Autoplay blocked (touch):', e);
-        }
-    }
+    attemptAudioPlayback(audio, 'touch');
 }, { once: true });
 
 function applyMoodTheme(score) {
@@ -119,32 +114,30 @@ function applyMoodTheme(score) {
     document.body.style.setProperty('--text-color', textColor);
 }
 
-function updateTime() {
-    const timeBox = document.getElementById('timeBox');
-    
-    function refreshTime() {
-        const now = new Date();
-        const hours = now.getHours().toString().padStart(2, '0');
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        const seconds = now.getSeconds().toString().padStart(2, '0');
-        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        
-        timeBox.textContent = `Local time: ${hours}:${minutes}:${seconds} — Timezone: ${timezone}`;
-    }
-    
-    // Update immediately and then every second
-    refreshTime();
-    setInterval(refreshTime, 1000);
-}
+// Remove the old updateTime function as time will be updated by getWeather
 
+
+// Modified function to format local time using a timezone offset
 function formatLocalTime(timezoneOffsetInSeconds) {
-    const local = new Date(Date.now() + timezoneOffsetInSeconds * 1000);
-    const timeStr = local.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    return timeStr;
+    // Get the current UTC time in milliseconds
+    const nowUtc = Date.now();
+    // Add the timezone offset (in milliseconds) to the UTC time
+    const localTimestamp = nowUtc + timezoneOffsetInSeconds * 1000;
+    const local = new Date(localTimestamp);
+    
+    const hours = local.getUTCHours().toString().padStart(2, '0');
+    const minutes = local.getUTCMinutes().toString().padStart(2, '0');
+    const seconds = local.getUTCSeconds().toString().padStart(2, '0');
+
+    return `${hours}:${minutes}:${seconds}`;
 }
 
-function getTimeOfDay() {
-    const hour = new Date().getHours();
+// Modified function to get the hour of the day using a timezone offset
+function getTimeOfDay(timezoneOffsetInSeconds) {
+    const nowUtc = Date.now(); // Get the current UTC time in milliseconds
+    const localTimestamp = nowUtc + timezoneOffsetInSeconds * 1000; // Add the timezone offset (in milliseconds)
+    const local = new Date(localTimestamp);
+    const hour = local.getUTCHours(); // Use getUTCHours with the adjusted timestamp
     
     if (hour >= 5 && hour < 12) {
         return "morning";
@@ -233,6 +226,7 @@ function calculateMood(weatherCondition, timeOfDay) {
     };
 }
 
+
 function playAmbientSound(weatherCondition) {
     const soundBox = document.getElementById('soundBox');
     const audioEl = document.getElementById('ambientAudio');
@@ -283,8 +277,6 @@ function playAmbientSound(weatherCondition) {
         soundBox.innerHTML = '<p>Tap anywhere to enable ambient sound</p>';
     }
 }
-
- 
 
 function buildVisualPrompt(data) {
     // Extract data
@@ -368,11 +360,19 @@ function buildVisualPrompt(data) {
 }
 
 
+
 function getWeather(params = {}) {
     const weatherBox = document.getElementById('weatherBox');
+    const timeBox = document.getElementById('timeBox');
 
     // Show loading state
     weatherBox.textContent = 'Loading weather data...';
+    // Clear previous time and interval
+    timeBox.textContent = '';
+    if (timeUpdateIntervalId) {
+        clearInterval(timeUpdateIntervalId);
+    }
+
 
     // Call our Netlify Function instead of OpenWeather directly
     fetch('/.netlify/functions/getWeather', {
@@ -384,7 +384,12 @@ function getWeather(params = {}) {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Weather data not available');
+            // Check for a JSON response even on error to get more details
+            return response.json().then(errData => {
+                throw new Error(`Weather data not available: ${errData.details || response.statusText}`);
+            }).catch(() => { // Handle cases where response is not JSON
+                throw new Error(`Weather data not available. Status: ${response.status}`);
+            });
         }
         return response.json();
     })
@@ -394,6 +399,8 @@ function getWeather(params = {}) {
         const iconCode = data.weather[0].icon;
         const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
         const cityName = data.name;
+        const timezoneOffset = data.timezone; // Get the timezone offset in seconds
+
 
         weatherBox.textContent = '';
 
@@ -413,26 +420,35 @@ function getWeather(params = {}) {
         weatherBox.appendChild(weatherText);
         weatherBox.appendChild(locationText);
 
-        const timeBox = document.getElementById('timeBox');
-        const localTime = formatLocalTime(data.timezone);
-        timeBox.textContent = `Local time: ${localTime} — Location: ${data.name}`;
+        // Update time box with local time of the location and set up interval
+        function updateLocationTime() {
+             const localTime = formatLocalTime(timezoneOffset);
+             timeBox.textContent = `Local time: ${localTime} — Location: ${data.name}`;
+        }
+        
+        updateLocationTime(); // Update immediately
+        timeUpdateIntervalId = setInterval(updateLocationTime, 1000); // Update every second
+
 
         playAmbientSound(condition);
 
-        const timeOfDay = getTimeOfDay();
+        // Calculate and display mood using the correct time of day for the location
+        const timeOfDay = getTimeOfDay(timezoneOffset); // Pass the timezone offset
         const mood = calculateMood(condition, timeOfDay);
         const moodBox = document.getElementById('moodBox');
         moodBox.textContent = `Mood: ${mood.label} ${mood.emoji} — Score: ${mood.score}/100`;
 
         applyMoodTheme(mood.score);
 
+        // Generate visual prompt using the correct time of day
         const visualPrompt = buildVisualPrompt({
             weatherCondition: condition,
             cityName: cityName,
-            localTime: localTime,
+            localTime: formatLocalTime(timezoneOffset), // Pass the correctly formatted local time string
             moodScore: mood.score,
             moodLabel: mood.label
         });
+
 
         console.log("Generated Visual Prompt:", visualPrompt.fullPrompt);
 
@@ -449,6 +465,10 @@ function getWeather(params = {}) {
     })
     .catch(error => {
         weatherBox.textContent = `Error: ${error.message}`;
+        timeBox.textContent = ''; // Clear time on error
+        if (timeUpdateIntervalId) {
+            clearInterval(timeUpdateIntervalId);
+        }
         console.error('Weather fetch error:', error);
     });
 }
@@ -456,7 +476,6 @@ function getWeather(params = {}) {
 
 function setupLocationDetection() {
     const detectLocationBtn = document.querySelector('.search-section button');
-    const cityInput = document.querySelector('.search-section input');
     
     // Event listener for the "Detect My Location" button
     detectLocationBtn.addEventListener('click', () => {
