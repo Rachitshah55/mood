@@ -1,0 +1,15 @@
+{
+  "name": "mood",
+  "version": "1.0.0",
+  "description": "**A one-page emotional map of the world**  \r Live mood, weather, time, and ambient sound of any city on Earth.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}
