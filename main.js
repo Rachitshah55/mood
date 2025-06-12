@@ -476,60 +476,67 @@ function getWeather(params = {}) {
 
 function setupLocationDetection() {
     const detectLocationBtn = document.querySelector('.search-section button');
+    const cityInput = document.querySelector('.search-section input'); // Declare cityInput here
     
     // Event listener for the "Detect My Location" button
-    detectLocationBtn.addEventListener('click', () => {
-        if (navigator.geolocation) {
-            detectLocationBtn.textContent = 'Detecting...';
-            detectLocationBtn.disabled = true;
-            
-            navigator.geolocation.getCurrentPosition(
-                // Success callback
-                (position) => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    getWeather({ lat, lon });
-                    detectLocationBtn.textContent = 'Detect My Location';
-                    detectLocationBtn.disabled = false;
-                },
-                // Error callback
-                (error) => {
-                    let errorMessage;
-                    switch (error.code) {
-                        case error.PERMISSION_DENIED:
-                            errorMessage = 'Location access denied';
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            errorMessage = 'Location information unavailable';
-                            break;
-                        case error.TIMEOUT:
-                            errorMessage = 'Location request timed out';
-                            break;
-                        default:
-                            errorMessage = 'Unknown location error';
-                    }
-                    
-                    const weatherBox = document.getElementById('weatherBox');
-                    weatherBox.textContent = `Error: ${errorMessage}. Please enter a city manually.`;
-                    detectLocationBtn.textContent = 'Detect My Location';
-                    detectLocationBtn.disabled = false;
-                    console.error('Geolocation error:', error);
-                },
-                // Options
-                { timeout: 10000 }
-            );
-        } else {
-            const weatherBox = document.getElementById('weatherBox');
-            weatherBox.textContent = 'Error: Geolocation is not supported by your browser. Please enter a city manually.';
-        }
-    });
+    if (detectLocationBtn) { // Added defensive check for the button
+        detectLocationBtn.addEventListener('click', () => {
+            if (navigator.geolocation) {
+                detectLocationBtn.textContent = 'Detecting...';
+                detectLocationBtn.disabled = true;
+                
+                navigator.geolocation.getCurrentPosition(
+                    // Success callback
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        getWeather({ lat, lon });
+                        detectLocationBtn.textContent = 'Detect My Location';
+                        detectLocationBtn.disabled = false;
+                    },
+                    // Error callback
+                    (error) => {
+                        let errorMessage;
+                        switch (error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = 'Location access denied';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = 'Location information unavailable';
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = 'Location request timed out';
+                                break;
+                            default:
+                                errorMessage = 'Unknown location error';
+                        }
+                        
+                        const weatherBox = document.getElementById('weatherBox');
+                        weatherBox.textContent = `Error: ${errorMessage}. Please enter a city manually.`;
+                        detectLocationBtn.textContent = 'Detect My Location';
+                        detectLocationBtn.disabled = false;
+                        console.error('Geolocation error:', error);
+                    },
+                    // Options
+                    { timeout: 10000 }
+                );
+            } else {
+                const weatherBox = document.getElementById('weatherBox');
+                weatherBox.textContent = 'Error: Geolocation is not supported by your browser. Please enter a city manually.';
+            }
+        });
+    }
     
     // Event listener for city input (when user presses Enter)
-    cityInput.addEventListener('keypress', (event) => {
-        if (event.key === 'Enter' && cityInput.value.trim() !== '') {
-            getWeather({ city: cityInput.value.trim() });
-        }
-    });
+    if (cityInput) { // Added defensive check for the input
+        cityInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter' && cityInput.value.trim() !== '') {
+                getWeather({ city: cityInput.value.trim() });
+            }
+        });
+    } else {
+        console.error("cityInput not found! Check your HTML or selector.");
+    }
 }
 
 function fetchLocalInfo() {
