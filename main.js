@@ -1,3 +1,4 @@
+console.log('main.js loaded');
 console.log("Stage 1 layout loaded");
 
 // Store the interval ID for the time update to clear it later
