@@ -38,9 +38,37 @@
       backdrop-filter: blur(12px);
     }
     .controls {
-      display: flex; gap: 1.5rem; z-index: 3; position: relative;
+      display: flex; gap: 1.5rem; flex-wrap: wrap; z-index: 3; position: relative;
       background: rgba(33,37,59,0.42); padding: 1rem 2rem; border-radius: 12px;
       margin-top: 2rem;
+    }
+    .controls {
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 800px) {
+      .controls {
+        flex-direction: column;
+        gap: 0.8rem;
+        align-items: stretch;
+      }
+      .fav-btn, .auto-btn {
+        margin-left: 0 !important;
+        margin-top: 0.7rem;
+        width: 100%;
+      }
+    }
+    @media (max-width: 800px) {
+      .controls {
+        flex-direction: column;
+        gap: 0.8rem;
+        align-items: stretch;
+      }
+      .fav-btn, .auto-btn {
+        margin-left: 0 !important;
+        margin-top: 0.7rem;
+        width: 100%;
+      }
     }
     select, .upload-btn, .fav-btn, .auto-btn {
       padding: 0.5rem 1rem; border-radius: 8px; border: none; font-size: 1rem;
@@ -87,7 +115,6 @@
       position: absolute; top: 0.1rem; right: 0.1rem; z-index: 2;
       transition: color 0.2s;
     }
-    .delete-btn:hover { color: #e04848; }
   </style>
 </head>
 <body>
@@ -239,114 +266,58 @@
       reader.readAsDataURL(file);
     });
 
-    // ---- UI update logic ----
-    function updateAll(skipOverlay) {
-      const m = mood.value, w = weather.value, t = time.value;
-      desc.textContent = `Mood: ${m} | Weather: ${w} | Time: ${t}`;
-      // Pick overlay & color based on weather
-      if(!skipOverlay) {
-        if(w === "Rain") { createRain(60); document.documentElement.style.setProperty('--overlay-color', '#87c9e7'); }
-        else if(w === "Snow") { createSnow(60); document.documentElement.style.setProperty('--overlay-color', '#fff'); }
-        else if(w === "Clear") { createClear(); document.documentElement.style.setProperty('--overlay-color', '#ffe066'); }
-        else { rainSvg.style.display = snowSvg.style.display = clearSvg.style.display = 'none'; }
-      }
-      // Pick glass color for mood
-      if(m === "Sad") { document.documentElement.style.setProperty('--glass-bg', 'rgba(33,37,59,0.7)'); document.documentElement.style.setProperty('--glass-color', '#90a4ae'); }
-      else if(m === "Energetic") { document.documentElement.style.setProperty('--glass-bg', 'rgba(255,234,128,0.5)'); document.documentElement.style.setProperty('--glass-color', '#444'); }
-      else if(m === "Happy") { document.documentElement.style.setProperty('--glass-bg', 'rgba(135,201,231,0.6)'); document.documentElement.style.setProperty('--glass-color', '#222'); }
-      else if(m === "Romantic") { document.documentElement.style.setProperty('--glass-bg', 'rgba(230,93,129,0.4)'); document.documentElement.style.setProperty('--glass-color', '#fff'); }
-      else { document.documentElement.style.setProperty('--glass-bg', 'rgba(33,37,59,0.5)'); document.documentElement.style.setProperty('--glass-color', '#e0f7fa'); }
-      // Adjust glass filter for time
-      if(t === "Night") document.documentElement.style.setProperty('--bg-filter', 'blur(4px) brightness(0.6)');
-      else if(t === "Morning") document.documentElement.style.setProperty('--bg-filter', 'blur(4px) brightness(1.0)');
-      else if(t === "Afternoon") document.documentElement.style.setProperty('--bg-filter', 'blur(4px) brightness(0.9)');
-      else document.documentElement.style.setProperty('--bg-filter', 'blur(4px) brightness(0.8)');
-    }
-    mood.addEventListener('change', updateAll);
-    weather.addEventListener('change', updateAll);
-    time.addEventListener('change', updateAll);
-    window.addEventListener('resize', () => updateAll(true));
+function updateAll() {
+  const m = mood.value, w = weather.value, t = time.value;
+  desc.textContent = `Mood: ${m} | Weather: ${w} | Time: ${t}`;
 
-    // ---- Favorites ----
-    function getFavorites() {
-      return JSON.parse(localStorage.getItem('ff_favorites') || '[]');
-    }
-    function saveFavorites(favs) {
-      localStorage.setItem('ff_favorites', JSON.stringify(favs));
-    }
-    function renderFavorites() {
-      const favs = getFavorites();
-      favoritesList.innerHTML = "";
-      if (!favs.length) {
-        favoritesList.textContent = "No favorites saved yet!";
-        return;
-      }
-      favs.forEach((fav, idx) => {
-        const div = document.createElement('div');
-        div.className = "favorite";
-        if (fav.image) {
-          const img = document.createElement('img');
-          img.src = fav.image;
-          div.appendChild(img);
-        }
-        const label = document.createElement('div');
-        label.className = "fav-label";
-        label.textContent = fav.label || `${fav.mood} / ${fav.weather} / ${fav.time}`;
-        div.appendChild(label);
-        const meta = document.createElement('div');
-        meta.className = "meta-info";
-        let dt = new Date(fav.ts);
-        meta.textContent = `${dt.toLocaleString()}${fav.source ? ' • '+fav.source : ''}`;
-        div.appendChild(meta);
+  // --------- Responsive Weather Overlays ----------
+  rainSvg.style.display = snowSvg.style.display = clearSvg.style.display = 'none';
 
-        const delBtn = document.createElement('button');
-        delBtn.className = "delete-btn";
-        delBtn.innerHTML = "🗑️";
-        delBtn.onclick = (e) => {
-          e.stopPropagation();
-          const favsNew = getFavorites();
-          favsNew.splice(idx, 1);
-          saveFavorites(favsNew);
-          renderFavorites();
-        };
-        div.appendChild(delBtn);
+  if(w === "Rain") {
+    createRain(60);
+    rainSvg.style.display = 'block';
+    document.documentElement.style.setProperty('--overlay-color', '#87c9e7');
+  }
+  else if(w === "Snow") {
+    createSnow(60);
+    snowSvg.style.display = 'block';
+    document.documentElement.style.setProperty('--overlay-color', '#fff');
+  }
+  else if(w === "Clear") {
+    // Subtle radial "sun" glow (CSS, no SVG)
+    document.body.style.backgroundImage = "radial-gradient(circle at 80vw 20vh, #ffe06655 0%, transparent 45%), var(--main-gradient, #232946)";
+    clearSvg.innerHTML = ""; // No more SVG sun
+    document.documentElement.style.setProperty('--overlay-color', '#ffe066');
+  }
+  else if(w === "Cloudy") {
+    // Subtle gray overlay or animated clouds (future)
+    document.body.style.backgroundImage = "linear-gradient(120deg, #c9d6ff 0%, #e2e2e2 100%)";
+    document.documentElement.style.setProperty('--overlay-color', '#b0bec5');
+  }
+  else {
+    // Default background for other weather
+    document.body.style.backgroundImage = "";
+  }
 
-        div.title = "Click to load this favorite";
-        div.onclick = (e) => {
-          if (e.target.classList.contains('delete-btn')) return;
-          mood.value = fav.mood;
-          weather.value = fav.weather;
-          time.value = fav.time;
-          if (fav.image) {
-            currentImgData = fav.image;
-            bgImg.src = fav.image;
-            bgImg.style.display = 'block';
-          } else {
-            currentImgData = "";
-            bgImg.src = "";
-            bgImg.style.display = 'none';
-          }
-          updateAll();
-        };
-        favoritesList.appendChild(div);
-      });
-    }
-    saveFav.onclick = () => {
-      const fav = {
-        label: favLabelInput.value.trim() || "",
-        mood: mood.value,
-        weather: weather.value,
-        time: time.value,
-        image: currentImgData || "",
-        ts: Date.now(),
-        source: lastAutoLocation ? "Auto" : "Manual"
-      };
-      const favs = getFavorites();
-      favs.push(fav);
-      saveFavorites(favs);
-      renderFavorites();
-      favLabelInput.value = "";
-    };
+  // --------- Mood-based Glass Color ----------
+  if(m === "Sad") { document.documentElement.style.setProperty('--glass-bg', 'rgba(33,37,59,0.7)'); document.documentElement.style.setProperty('--glass-color', '#90a4ae'); }
+  else if(m === "Energetic") { document.documentElement.style.setProperty('--glass-bg', 'rgba(255,234,128,0.5)'); document.documentElement.style.setProperty('--glass-color', '#444'); }
+  else if(m === "Happy") { document.documentElement.style.setProperty('--glass-bg', 'rgba(135,201,231,0.6)'); document.documentElement.style.setProperty('--glass-color', '#222'); }
+  else if(m === "Romantic") { document.documentElement.style.setProperty('--glass-bg', 'rgba(230,93,129,0.4)'); document.documentElement.style.setProperty('--glass-color', '#fff'); }
+  else { document.documentElement.style.setProperty('--glass-bg', 'rgba(33,37,59,0.5)'); document.documentElement.style.setProperty('--glass-color', '#e0f7fa'); }
+
+  // --------- Time-based Filter/Extra Overlays ----------
+  if(t === "Night") document.documentElement.style.setProperty('--bg-filter', 'blur(4px) brightness(0.6)');
+  else if(t === "Morning") document.documentElement.style.setProperty('--bg-filter', 'blur(4px) brightness(1.0)');
+  else if(t === "Afternoon") document.documentElement.style.setProperty('--bg-filter', 'blur(4px) brightness(0.9)');
+  else document.documentElement.style.setProperty('--bg-filter', 'blur(4px) brightness(0.8)');
+}
+
+// Responsive: update overlays on dropdown change
+mood.addEventListener('change', updateAll);
+weather.addEventListener('change', updateAll);
+time.addEventListener('change', updateAll);
+window.addEventListener('resize', updateAll);
 
 // --- Minimal Festival Data (can expand later) ---
 const FESTIVALS = [
