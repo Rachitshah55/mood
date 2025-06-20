@@ -21,8 +21,21 @@
   background-position: center;
   z-index: -1;
   opacity: 0.8;
-  transition: background-image 1s ease;
+  transition: background-image 1s ease, filter 0.5s ease;
   filter: brightness(0.9) blur(2px);
+}
+
+/* Style for idle mode: background is less dimmed, UI is hidden/dimmed */
+body.idle-mode #bgImageLayer {
+    filter: brightness(1) blur(0);
+}
+
+body.idle-mode #app > section,
+body.idle-mode #app > div,
+body.idle-mode #imageAttribution {
+    opacity: 0;
+    pointer-events: none; /* Disable clicks when hidden */
+    transition: opacity 0.5s ease;
 }
 
 body {

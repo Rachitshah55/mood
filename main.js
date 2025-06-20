@@ -76,7 +76,29 @@ function attemptAudioPlayback(audioElement, sourceEvent) {
 document.addEventListener('touchstart', () => {
     const audio = document.getElementById('ambientAudio');
     attemptAudioPlayback(audio, 'touch');
-}, { once: true });
+});
+
+// UI/UX: Idle mode to hide UI elements
+let idleTimer = null;
+const IDLE_TIMEOUT = 10000; // 10 seconds of inactivity
+
+function resetIdleTimer() {
+    if (idleTimer) {
+        clearTimeout(idleTimer);
+    }
+    document.body.classList.remove('idle-mode');
+    idleTimer = setTimeout(() => {
+        document.body.classList.add('idle-mode');
+    }, IDLE_TIMEOUT);
+}
+
+// Add event listeners for user activity to reset the timer
+['mousemove', 'mousedown', 'touchstart', 'scroll', 'keypress'].forEach(event => {
+    document.addEventListener(event, resetIdleTimer, true);
+});
+
+// Initial call to start the timer
+resetIdleTimer();
 
 function applyMoodTheme(score) {
     // Define theme colors based on mood score ranges
@@ -360,6 +382,182 @@ function buildVisualPrompt(data) {
     };
 }
 
+// Function to display image attribution
+function displayAttribution(data) {
+    const attributionDiv = document.getElementById('imageAttribution');
+    if (!attributionDiv) {
+        console.error('Attribution div not found!');
+        return;
+    }
+
+    let attributionHTML = '';
+
+    if (data && data.url && data.photographer && data.source_url && data.api) {
+        // Basic attribution structure - can be refined based on API requirements
+        // Example formats based on common requirements:
+        // Pexels: "Photo by [Photographer Name] from Pexels" linking Photographer Name to photographer_url or source_url
+        // Pixabay: "Image by [Photographer Name] on Pixabay" linking Photographer Name to photographer_url or source_url
+        // Unsplash: "Photo by [Photographer Name] on Unsplash" linking Photographer Name to photographer_url or source_url
+
+        let photographerLink = data.photographer;
+        if (data.photographer_url) {
+             photographerLink = `<a href="${data.photographer_url}" target="_blank" rel="noopener noreferrer">${data.photographer}</a>`;
+        } else if (data.source_url) {
+             // Fallback to source_url if photographer_url is not provided
+             photographerLink = `<a href="${data.source_url}" target="_blank" rel="noopener noreferrer">${data.photographer}</a>`;
+        }
+
+        let sourceLink = '';
+        if (data.api === 'pexels') {
+            sourceLink = ` from <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Pexels</a>`;
+        } else if (data.api === 'pixabay') {
+            sourceLink = ` on <a href="https://pixabay.com/" target="_blank" rel="noopener noreferrer">Pixabay</a>`;
+        } else if (data.api === 'unsplash') {
+             sourceLink = ` on <a href="https://unsplash.com/" target="_blank" rel="noopener noreferrer">Unsplash</a>`;
+        }
+
+        attributionHTML = `Photo by ${photographerLink}${sourceLink}`;
+
+    } else if (data && data.error) {
+        attributionHTML = `Error loading image: ${data.error}`;
+    }
+     else {
+        attributionHTML = 'Image attribution will appear here.';
+    }
+
+    attributionDiv.innerHTML = attributionHTML;
+}
+
+
+// Function to fetch background image from APIs via Netlify Functions
+async function fetchBackgroundImage(query) {
+    const bgImageLayer = document.getElementById("bgImageLayer");
+    const attributionDiv = document.getElementById('imageAttribution');
+
+    // Attempt to load cached image first
+    const cachedImageUrl = localStorage.getItem('ff_last_image_url');
+    if (cachedImageUrl) {
+        bgImageLayer.style.backgroundImage = `url('${cachedImageUrl}')`;
+        console.log('Loaded background from cache:', cachedImageUrl);
+        // Display a generic attribution or indicate it's cached if needed
+        displayAttribution({ error: 'Loading new image...' }); // Clear previous attribution while fetching
+    } else {
+         displayAttribution({ error: 'Fetching initial background image...' });
+    }
+
+
+    const apiEndpoints = [
+        '/.netlify/functions/fetchPexels',
+        '/.netlify/functions/fetchUnsplash'
+    ];
+
+    const apiCount = parseInt(localStorage.getItem('ff_api_count' ) || '0', 10);
+    // Determine the order of APIs based on the count for cycling
+    const apiOrder = [
+        apiEndpoints[apiCount % 3],
+        apiEndpoints[(apiCount + 1) % 3],
+        apiEndpoints[(apiCount + 2) % 3],
+    ];
+
+    const imageCache = JSON.parse(localStorage.getItem('ff_image_cache') || '[]');
+    const MAX_CACHE_SIZE = 100;
+
+    for (const endpoint of apiOrder) {
+        try {
+            console.log(`Attempting to fetch image from ${endpoint} with query: "${query}"`);
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ query: query })
+            });
+
+            if (!response.ok) {
+                 const errorData = await response.json().catch(() => ({ error: response.statusText })); // Try to parse error body
+                 console.error(`Error fetching from ${endpoint}:`, errorData.error);
+                 displayAttribution({ error: `Failed to fetch from ${endpoint.split('/').pop().replace('fetch', '')}` });
+                 continue; // Try the next API
+            }
+
+            const data = await response.json();
+
+            if (data.error) {
+                console.error(`API error from ${endpoint}:`, data.error);
+                displayAttribution({ error: `API error from ${endpoint.split('/').pop().replace('fetch', '')}: ${data.error}` });
+                continue; // Try the next API
+            }
+
+            // Check for deduplication
+            if (data.id && imageCache.includes(data.id)) {
+                console.log(`Image ID ${data.id} already in cache, trying next API.`);
+                displayAttribution({ error: `Skipping duplicate image from ${data.api}` });
+                continue; // Skip to the next API
+            }
+
+            // On success: update background, cache, attribution, and API count
+            document.getElementById("bgImageLayer").style.backgroundImage = `url('${data.url}')`;
+            console.log(`Successfully set background image from ${data.api}: ${data.url}`);
+
+            // Update cache
+            imageCache.unshift(data.id); // Add to the beginning
+            if (imageCache.length > MAX_CACHE_SIZE) {
+                imageCache.pop(); // Remove the oldest if exceeding limit
+            }
+            localStorage.setItem('ff_image_cache', JSON.stringify(imageCache));
+
+            // Display attribution
+            displayAttribution(data);
+
+            // Increment API count for cycling
+            localStorage.setItem('ff_api_count', (apiCount + 1).toString());
+
+
+            // On success: update background, cache, attribution, and API count
+            bgImageLayer.style.backgroundImage = `url('${data.url}')`;
+            console.log(`Successfully set background image from ${data.api}: ${data.url}`);
+
+            // Update image cache for deduplication
+            imageCache.unshift(data.id); // Add to the beginning
+            if (imageCache.length > MAX_CACHE_SIZE) {
+                imageCache.pop(); // Remove the oldest if exceeding limit
+            }
+            localStorage.setItem('ff_image_cache', JSON.stringify(imageCache));
+
+            // Cache the successfully loaded image URL
+            localStorage.setItem('ff_last_image_url', data.url);
+
+            // Display attribution
+            displayAttribution(data);
+
+            // Increment API count for cycling
+            localStorage.setItem('ff_api_count', (apiCount + 1).toString());
+
+            return; // Exit the loop on success
+
+        } catch (error) {
+            console.error(`Fetch error from ${endpoint}:`, error);
+            displayAttribution({ error: `Network error fetching from ${endpoint.split('/').pop().replace('fetch', '')}` });
+            // Continue to the next API in case of network error
+        }
+    }
+
+    // If loop finishes without success
+    console.warn('All background image APIs failed to fetch a new image.');
+    // If there was no cached image initially, or if the cached image failed to load (though browser usually handles this),
+    // display an error. Otherwise, the cached image remains visible.
+    if (!cachedImageUrl) {
+        displayAttribution({ error: 'Could not load a new background image from any source.' });
+         // Optionally set a fallback static image here if no cache and all fetches fail
+         // document.getElementById("bgImageLayer").style.backgroundImage = `url('./assets/placeholders/sunny-beach.jpg')`;
+    } else {
+        // If cached image was loaded but new fetch failed, just update attribution to reflect the fetch issue.
+         console.log('Using cached image due to fetch failure.');
+         displayAttribution({ error: 'Failed to update background image.' }); // More subtle message if using cache
+    }
+
+
+}
 
 
 function getWeather(params = {}) {
@@ -453,16 +651,8 @@ function getWeather(params = {}) {
 
         console.log("Generated Visual Prompt:", visualPrompt.fullPrompt);
 
-        const sceneKey = `${condition}-${timeOfDay}`;
-        console.log("Scene key:", sceneKey);
-
-        const filename = backgroundMap[sceneKey] || "sunny-beach";
-        console.log("Resolved filename:", filename);
-
-        const bgUrl = `./assets/placeholders/${filename}.jpg`;
-        console.log("Image path:", bgUrl);
-
-        document.getElementById("bgImageLayer").style.backgroundImage = `url('${bgUrl}')`;
+        // Fetch background image using the generated prompt
+        fetchBackgroundImage(visualPrompt.fullPrompt);
     })
     .catch(error => {
         weatherBox.textContent = `Error: ${error.message}`;
