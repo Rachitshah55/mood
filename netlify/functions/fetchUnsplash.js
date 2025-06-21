@@ -1,2 +1,42 @@
-exports.handler = async (event) => {\n  try {\n    const { query } = JSON.parse(event.body);\n    const apiKey = process.env.UNSPLASH_API_KEY;\n\n    if (!apiKey) {\n      return {\n        statusCode: 500,\n        body: JSON.stringify({ error: \'UNSPLASH_API_KEY not set in environment variables.\' }),\n      };\n    }\n\n    // Placeholder for Unsplash API fetch logic\n    // Replace with actual API call using `query` and `apiKey`\n    console.log(`Fetching Unsplash with query: ${query}`);\n\n    // Placeholder response structure (adjust based on actual Unsplash response)\n    const responseData = {\n      url: \'placeholder_url\',\n      photographer: \'placeholder_photographer\',\n      photographer_url: \'placeholder_photographer_url\',\
-      source_url: \'placeholder_source_url\',\n      api: \'unsplash\',\n      id: \'placeholder_id\',\n    };\n\n    return {\n      statusCode: 200,\n      body: JSON.stringify(responseData),\n    };\n  } catch (error) {\n    console.error(\'Error fetching from Unsplash API:\', error);\n    return {\n      statusCode: 500,\n      body: JSON.stringify({ error: \'Failed to fetch image from Unsplash.\' }),\n    };\n  }\n};\n
+const fetch = global.fetch || require('node-fetch');
+
+exports.handler = async (event) => {
+  try {
+    const { query } = JSON.parse(event.body);
+    const apiKey = process.env.UNSPLASH_API_KEY;
+
+    if (!apiKey) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'UNSPLASH_API_KEY not set in environment variables.' }),
+      };
+    }
+
+    const url = `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&client_id=${apiKey}`;
+    const resp = await fetch(url);
+    const photo = await resp.json();
+    if (!photo || photo.errors) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ error: "No image found" }),
+      };
+    }
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        url: photo.urls.regular,
+        photographer: photo.user.name,
+        photographer_url: photo.user.links.html,
+        source_url: photo.links.html,
+        api: 'unsplash',
+        id: `unsplash_${photo.id}`,
+      }),
+    };
+  } catch (error) {
+    console.error('Error fetching from Unsplash API:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Failed to fetch image from Unsplash.' }),
+    };
+  }
+};

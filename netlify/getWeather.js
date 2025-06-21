@@ -3,7 +3,7 @@ const fetch = global.fetch || require('node-fetch');
 exports.handler = async (event) => {
   try {
     const API_KEY = process.env.OPENWEATHER_API_KEY;
-    const { lat, lon, city } = JSON.parse(event.body || '{}');
+    const { lat, lon, city } = JSON.parse(event.body);
     let url;
 
     if (lat !== undefined && lon !== undefined) {
@@ -17,14 +17,6 @@ exports.handler = async (event) => {
     const response = await fetch(url);
     const data = await response.json();
 
-    if (!response.ok) {
-      // Handle OpenWeather errors (e.g., invalid API key, city not found)
-      return {
-        statusCode: data.cod || 500,
-        body: JSON.stringify({ error: data.message || "Weather API error" }),
-      };
-    }
-
     return {
       statusCode: 200,
       body: JSON.stringify(data),
@@ -36,4 +28,3 @@ exports.handler = async (event) => {
     };
   }
 };
-

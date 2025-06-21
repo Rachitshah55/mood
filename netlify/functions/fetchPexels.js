@@ -1,3 +1,5 @@
+const fetch = global.fetch || require('node-fetch');
+
 exports.handler = async (event) => {
   try {
     const { query } = JSON.parse(event.body);
@@ -10,23 +12,26 @@ exports.handler = async (event) => {
       };
     }
 
-    // Placeholder for Pexels API fetch logic
-    // Replace with actual API call using `query` and `apiKey`
-    console.log(`Fetching Pexels with query: ${query}`);
-
-    // Placeholder response structure
-    const responseData = {
-      url: 'placeholder_url',
-      photographer: 'placeholder_photographer',
-      photographer_url: 'placeholder_photographer_url',
-      source_url: 'placeholder_source_url',
-      api: 'pexels',
-      id: 'placeholder_id',
-    };
-
+    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=1`;
+    const resp = await fetch(url, { headers: { Authorization: apiKey } });
+    const data = await resp.json();
+    const photo = data.photos?.[0];
+    if (!photo) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ error: "No image found" }),
+      };
+    }
     return {
       statusCode: 200,
-      body: JSON.stringify(responseData),
+      body: JSON.stringify({
+        url: photo.src.landscape,
+        photographer: photo.photographer,
+        photographer_url: photo.photographer_url,
+        source_url: photo.url,
+        api: 'pexels',
+        id: `pexels_${photo.id}`,
+      }),
     };
   } catch (error) {
     console.error('Error fetching from Pexels API:', error);

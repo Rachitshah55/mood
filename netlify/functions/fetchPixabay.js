@@ -1,3 +1,5 @@
+const fetch = global.fetch || require('node-fetch');
+
 exports.handler = async (event) => {
   try {
     const { query } = JSON.parse(event.body);
@@ -10,23 +12,26 @@ exports.handler = async (event) => {
       };
     }
 
-    // Placeholder for Pixabay API fetch logic
-    // Replace with actual API call using `query` and `apiKey`
-    console.log(`Fetching Pixabay with query: ${query}`);
-
-    // Placeholder response structure (adjust based on actual Pixabay response)
-    const responseData = {
-      url: 'placeholder_url',
-      photographer: 'placeholder_photographer',
-      photographer_url: 'placeholder_photographer_url',
-      source_url: 'placeholder_source_url',
-      api: 'pixabay',
-      id: 'placeholder_id',
-    };
-
+    const url = `https://pixabay.com/api/?key=${apiKey}&q=${encodeURIComponent(query)}&image_type=photo&per_page=1`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    const img = data.hits?.[0];
+    if (!img) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ error: "No image found" }),
+      };
+    }
     return {
       statusCode: 200,
-      body: JSON.stringify(responseData),
+      body: JSON.stringify({
+        url: img.largeImageURL,
+        photographer: img.user,
+        photographer_url: `https://pixabay.com/users/${img.user}-${img.user_id}/`,
+        source_url: img.pageURL,
+        api: 'pixabay',
+        id: `pixabay_${img.id}`,
+      }),
     };
   } catch (error) {
     console.error('Error fetching from Pixabay API:', error);
