@@ -448,6 +448,7 @@ async function fetchBackgroundImage(query) {
 
     const apiEndpoints = [
         '/.netlify/functions/fetchPexels',
+        '/.netlify/functions/fetchPixabay',
         '/.netlify/functions/fetchUnsplash'
     ];
 
