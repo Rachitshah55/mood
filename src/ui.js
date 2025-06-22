@@ -21,5 +21,3 @@ export function setupUI() {
     // Initial call to start the timer
     resetIdleTimer();
 }
-
-
