@@ -12,7 +12,11 @@ async function initializeApp(params = {}) {
     try {
         // Fetch weather data
         const weatherData = await getWeather(params);
-        const { condition, cityName, timezoneOffset } = weatherData;
+		if (!weatherData || !weatherData.condition || !weatherData.cityName || !weatherData.timezoneOffset) {
+			throw new Error("Weather data unavailable or incomplete.");
+		}
+		const { condition, cityName, timezoneOffset } = weatherData;
+
 
         // Get time of day for mood and background
         const localTime = formatLocalTime(timezoneOffset);

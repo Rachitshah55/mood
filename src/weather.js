@@ -10,8 +10,9 @@ export function formatLocalTime(timezoneOffsetInSeconds) {
     const local = new Date(localTimestamp);
     
     const hours = local.getUTCHours().toString().padStart(2, '0');
-    const minutes = local.getUTCMinutes().toString().padStart(2, '0');
-    const seconds = local.getUTCSeconds().padStart(2, '0');
+	const minutes = local.getUTCMinutes().toString().padStart(2, '0');
+	const seconds = local.getUTCSeconds().toString().padStart(2, '0');
+
 
     return `${hours}:${minutes}:${seconds}`;
 }
