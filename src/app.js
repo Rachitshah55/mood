@@ -5,7 +5,7 @@ import { buildVisualPrompt, fetchBackgroundImage, displayAttribution } from './b
 import { playAmbientSound } from './sound.js';
 import { calculateMood, applyMoodTheme } from './mood.js';
 import { setupLocationDetection, fetchLocalInfo } from './location.js';
-import { setupUI, resetIdleTimer } from './ui.js';
+import { setupUI } from './ui.js';
 
 // Main function to initialize the app
 async function initializeApp(params = {}) {

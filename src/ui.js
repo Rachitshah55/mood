@@ -23,22 +23,3 @@ export function setupUI() {
 }
 
 
-export function resetIdleTimer() {
-    if (idleTimer) {
-        clearTimeout(idleTimer);
-    }
-    document.body.classList.remove('idle-mode');
-    idleTimer = setTimeout(() => {
-        document.body.classList.add('idle-mode');
-    }, IDLE_TIMEOUT);
-}
-
-// Add event listeners for user activity to reset the timer
-export function setupUIActivityListeners() {
-    ['mousemove', 'mousedown', 'touchstart', 'scroll', 'keypress'].forEach(event => {
-        document.addEventListener(event, resetIdleTimer, true);
-    });
-
-    // Initial call to start the timer
-    resetIdleTimer();
-}
