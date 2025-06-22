@@ -21,8 +21,7 @@ export function setupUI() {
     // Initial call to start the timer
     resetIdleTimer();
 }
-let idleTimer = null;
-const IDLE_TIMEOUT = 10000; // 10 seconds of inactivity
+
 
 export function resetIdleTimer() {
     if (idleTimer) {
