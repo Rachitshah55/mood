@@ -35,7 +35,7 @@ export function getTimeOfDay(timezoneOffsetInSeconds) {
     }
 }
 
-export function getWeather(params = {}) {
+export async function getWeather(params = {}) {
     const weatherBox = document.getElementById('weatherBox');
     const timeBox = document.getElementById('timeBox');
 
@@ -47,34 +47,32 @@ export function getWeather(params = {}) {
         clearInterval(timeUpdateIntervalId);
     }
 
+    try {
+        const response = await fetch('/.netlify/functions/getWeather', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(params)
+        });
 
-    // Call our Netlify Function instead of OpenWeather directly
-    fetch('/.netlify/functions/getWeather', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(params)
-    })
-    .then(response => {
         if (!response.ok) {
             // Check for a JSON response even on error to get more details
-            return response.json().then(errData => {
+            try {
+                const errData = await response.json();
                 throw new Error(`Weather data not available: ${errData.details || response.statusText}`);
-            }).catch(() => { // Handle cases where response is not JSON
+            } catch {
                 throw new Error(`Weather data not available. Status: ${response.status}`);
-            });
+            }
         }
-        return response.json();
-    })
-    .then(data => {
+
+        const data = await response.json();
         const temperature = Math.round(data.main.temp);
         const condition = data.weather[0].main;
         const iconCode = data.weather[0].icon;
         const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
         const cityName = data.name;
         const timezoneOffset = data.timezone; // Get the timezone offset in seconds
-
 
         weatherBox.textContent = '';
 
@@ -96,49 +94,23 @@ export function getWeather(params = {}) {
 
         // Update time box with local time of the location and set up interval
         function updateLocationTime() {
-             const localTime = formatLocalTime(timezoneOffset);
-             timeBox.textContent = `Local time: ${localTime} — Location: ${data.name}`;
+            const localTime = formatLocalTime(timezoneOffset);
+            timeBox.textContent = `Local time: ${localTime} — Location: ${data.name}`;
         }
         
         updateLocationTime(); // Update immediately
         timeUpdateIntervalId = setInterval(updateLocationTime, 1000); // Update every second
 
-
-        // playAmbientSound(condition); // This will be called from app.js after importing
-
-        // Calculate and display mood using the correct time of day for the location
-        // const timeOfDay = getTimeOfDay(timezoneOffset); // This will be done in app.js
-        // const mood = calculateMood(condition, timeOfDay); // This will be done in app.js
-        // const moodBox = document.getElementById('moodBox'); // This will be done in app.js
-        // moodBox.textContent = `Mood: ${mood.label} ${mood.emoji} — Score: ${mood.score}/100`; // This will be done in app.js
-
-        // applyMoodTheme(mood.score); // This will be done in app.js
-
-        // Generate visual prompt using the correct time of day
-        // const visualPrompt = buildVisualPrompt({
-        //     weatherCondition: condition,
-        //     cityName: cityName,
-        //     localTime: formatLocalTime(timezoneOffset), // Pass the correctly formatted local time string
-        //     moodScore: mood.score,
-        //     moodLabel: mood.label
-        // }); // This will be done in app.js
-
-
-        // console.log("Generated Visual Prompt:", visualPrompt.fullPrompt); // This will be done in app.js
-
-        // Fetch background image using the generated prompt
-        // fetchBackgroundImage(visualPrompt.fullPrompt); // This will be called from app.js
-
         // Return relevant data for other modules
         return { condition, cityName, timezoneOffset };
-    })
-    .catch(error => {
+
+    } catch (error) {
         weatherBox.textContent = `Error: ${error.message}`;
         timeBox.textContent = ''; // Clear time on error
         if (timeUpdateIntervalId) {
             clearInterval(timeUpdateIntervalId);
         }
         console.error('Weather fetch error:', error);
-        throw error; // Re-throw to allow app.js to handle it
-    });
+        return null; // So app.js can handle the error
+    }
 }
